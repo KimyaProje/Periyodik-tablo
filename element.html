@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Element Detayı</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --bg2: #12121a;
+  --bg3: #1a1a26;
+  --border: rgba(255,255,255,0.08);
+  --text: #e8e8f0;
+  --muted: #6060a0;
+  --accent: #4cc9f0;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+}
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 20px;
+}
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 13px;
+  margin-bottom: 24px;
+  transition: color 0.2s;
+}
+.back:hover { color: var(--accent); }
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+@media (max-width: 640px) { .hero { grid-template-columns: 1fr; } }
+
+/* Atom canvas panel */
+.atom-panel {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+  position: relative;
+  overflow: hidden;
+}
+.atom-panel canvas {
+  display: block;
+}
+.atom-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 12px;
+  letter-spacing: 0.08em;
+}
+
+/* Info card */
+.info-panel {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+}
+.elem-sym {
+  font-family: 'Space Mono', monospace;
+  font-size: 72px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.elem-name {
+  font-size: 24px;
+  font-weight: 300;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+.props {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.prop {
+  background: var(--bg3);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+.prop-label {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+.prop-val {
+  font-family: 'Space Mono', monospace;
+  font-size: 16px;
+  font-weight: 700;
+}
+.uses-label {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+.uses-text {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.6;
+}
+.discovery-text {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 10px;
+}
+
+/* Charts row */
+.charts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+@media (max-width: 640px) { .charts { grid-template-columns: 1fr; } }
+.chart-panel {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+}
+.chart-title {
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 16px;
+}
+.bar-wrap { display: flex; flex-direction: column; gap: 6px; }
+.bar-row { display: flex; align-items: center; gap: 10px; }
+.bar-sym {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  width: 22px;
+  text-align: right;
+  flex-shrink: 0;
+}
+.bar-track {
+  flex: 1;
+  height: 8px;
+  background: var(--bg3);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 1s cubic-bezier(0.4,0,0.2,1);
+}
+.bar-val {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  width: 40px;
+  flex-shrink: 0;
+}
+.current-bar .bar-sym { color: var(--accent); }
+.current-bar .bar-fill { box-shadow: 0 0 8px rgba(76,201,240,0.5); }
+.trend-note {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 14px;
+  line-height: 1.5;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <a class="back" href="index.html">← Periyodik Tabloya Dön</a>
+  <div class="hero">
+    <div class="atom-panel">
+      <div class="atom-title">3D ATOM MODELİ</div>
+      <canvas id="atomCanvas" width="260" height="240"></canvas>
+    </div>
+    <div class="info-panel" id="infoPanel">
+      <div class="elem-sym" id="elemSym">?</div>
+      <div class="elem-name" id="elemName">Yükleniyor...</div>
+      <div class="props">
+        <div class="prop"><div class="prop-label">Atom No</div><div class="prop-val" id="propZ">—</div></div>
+        <div class="prop"><div class="prop-label">Atom Kütlesi</div><div class="prop-val" id="propM">—</div></div>
+        <div class="prop"><div class="prop-label">Atom Yarıçapı</div><div class="prop-val" id="propR">—</div></div>
+        <div class="prop"><div class="prop-label">1. İyonlaşma E.</div><div class="prop-val" id="propIE">—</div></div>
+        <div class="prop"><div class="prop-label">Periyot</div><div class="prop-val" id="propP">—</div></div>
+        <div class="prop"><div class="prop-label">Grup</div><div class="prop-val" id="propG">—</div></div>
+      </div>
+      <div class="uses-label">Kullanım Alanları</div>
+      <div class="uses-text" id="propUses">—</div>
+      <div class="discovery-text" id="propDisc">—</div>
+    </div>
+  </div>
+
+  <div class="charts">
+    <div class="chart-panel">
+      <div class="chart-title">⬤ Atom Yarıçapı — Aynı Periyottaki Elementler</div>
+      <div class="bar-wrap" id="radiusChart"></div>
+      <div class="trend-note" id="radiusTrend"></div>
+    </div>
+    <div class="chart-panel">
+      <div class="chart-title">⬤ İyonlaşma Enerjisi — Aynı Periyottaki Elementler</div>
+      <div class="bar-wrap" id="ieChart"></div>
+      <div class="trend-note" id="ieTrend"></div>
+    </div>
+  </div>
+</div>
+
+<script src="elements_data.js"></script>
+<script>
+// ── Parse URL
+const params = new URLSearchParams(location.search);
+const Z = parseInt(params.get('z')) || 1;
+const el = ELEMENTS.find(e => e.z === Z);
+
+if (!el) { document.body.innerHTML = '<div style="padding:40px;color:#fff">Element bulunamadı.</div>'; throw ''; }
+
+// ── Category colors
+const CAT_COLOR = {
+  alkali:'#ff6b35', alkaline:'#f7c59f', transition:'#4ecdc4',
+  metal:'#a8a8b8', metalloid:'#6bcb77', nonmetal:'#ff6b6b',
+  halogen:'#c77dff', noble:'#4cc9f0', lanthanide:'#f72585', actinide:'#ff9a3c'
+};
+const accent = CAT_COLOR[el.category] || '#4cc9f0';
+document.documentElement.style.setProperty('--accent', accent);
+
+// ── Fill info
+document.getElementById('elemSym').textContent = el.sym;
+document.getElementById('elemSym').style.color = accent;
+document.getElementById('elemName').textContent = el.name;
+document.getElementById('propZ').textContent = el.z;
+document.getElementById('propM').textContent = el.mass + ' u';
+document.getElementById('propR').textContent = el.radius + ' pm';
+document.getElementById('propIE').textContent = el.ie + ' kJ/mol';
+document.getElementById('propP').textContent = el.period + '. Periyot';
+document.getElementById('propG').textContent = el.group + '. Grup';
+document.getElementById('propUses').textContent = el.uses;
+document.getElementById('propDisc').textContent = 'Keşif: ' + el.discovery;
+document.title = el.sym + ' — ' + el.name;
+
+// ── 3D Atom Animation (Canvas 2D with CSS3D illusion)
+const canvas = document.getElementById('atomCanvas');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+const cx = W/2, cy = H/2;
+
+const shells = el.shells;
+const maxShell = shells.length;
+const maxR = Math.min(W, H) / 2 - 10;
+const shellRadii = shells.map((_, i) => (i+1) * maxR / maxShell);
+
+// Electrons per shell with angle offsets
+const electrons = [];
+shells.forEach((count, si) => {
+  const r = shellRadii[si];
+  for (let i = 0; i < count; i++) {
+    electrons.push({
+      shell: si,
+      r,
+      angle: (2 * Math.PI * i / count),
+      speed: 0.012 / (si + 1) * (si % 2 === 0 ? 1 : -1),
+      tilt: (si * 37 % 90) * Math.PI / 180,
+    });
+  }
+});
+
+let t = 0;
+function drawAtom() {
+  ctx.clearRect(0, 0, W, H);
+  // Nucleus glow
+  const nSize = Math.max(6, Math.min(18, 4 + el.z * 0.1));
+  const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, nSize * 2);
+  grd.addColorStop(0, accent);
+  grd.addColorStop(0.5, accent + '80');
+  grd.addColorStop(1, 'transparent');
+  ctx.fillStyle = grd;
+  ctx.beginPath();
+  ctx.arc(cx, cy, nSize * 2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = accent;
+  ctx.beginPath();
+  ctx.arc(cx, cy, nSize, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Draw shells and electrons
+  shells.forEach((_, si) => {
+    const r = shellRadii[si];
+    const tilt = (si * 37 % 90) * Math.PI / 180;
+    // Ellipse for shell (tilt perspective)
+    ctx.save();
+    ctx.strokeStyle = accent + '22';
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, r, r * Math.abs(Math.cos(tilt + t * 0.001)) + 4, si * 0.4, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  });
+
+  // Electrons
+  electrons.forEach(e => {
+    const a = e.angle + t * e.speed;
+    const tilt = e.tilt + t * 0.0005;
+    const ex = cx + e.r * Math.cos(a);
+    const ey = cy + e.r * Math.sin(a) * Math.abs(Math.cos(tilt)) * 0.55 + e.r * Math.sin(tilt) * 0.1;
+    const depth = Math.sin(a) * Math.cos(tilt);
+    const alpha = 0.55 + depth * 0.45;
+    const size = 3.5 + depth * 1.5;
+
+    // electron trail
+    ctx.save();
+    ctx.globalAlpha = alpha * 0.25;
+    const trail = ctx.createRadialGradient(ex, ey, 0, ex, ey, size * 3);
+    trail.addColorStop(0, '#ffffff');
+    trail.addColorStop(1, 'transparent');
+    ctx.fillStyle = trail;
+    ctx.beginPath();
+    ctx.arc(ex, ey, size * 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(ex, ey, size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  });
+
+  // Shell labels
+  shells.forEach((count, si) => {
+    const r = shellRadii[si];
+    ctx.fillStyle = accent + 'cc';
+    ctx.font = '9px Space Mono, monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('n=' + (si+1) + ' (' + count + 'e⁻)', cx + r + 4, cy - 4);
+  });
+
+  t++;
+  requestAnimationFrame(drawAtom);
+}
+drawAtom();
+
+// ── Build bar charts
+function buildChart(containerId, property, unit, color, trendId) {
+  const periodElems = ELEMENTS.filter(e => e.period === el.period && e[property] > 0);
+  const maxVal = Math.max(...periodElems.map(e => e[property]));
+  const container = document.getElementById(containerId);
+
+  periodElems.forEach(e => {
+    const pct = (e[property] / maxVal * 100).toFixed(1);
+    const isCurrent = e.z === el.z;
+    const row = document.createElement('div');
+    row.className = 'bar-row' + (isCurrent ? ' current-bar' : '');
+    row.innerHTML = `
+      <div class="bar-sym">${e.sym}</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:0%;background:${isCurrent ? color : color + '55'}"></div>
+      </div>
+      <div class="bar-val">${e[property]}${unit}</div>
+    `;
+    container.appendChild(row);
+    // Animate in
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        row.querySelector('.bar-fill').style.width = pct + '%';
+      }, 100);
+    });
+  });
+
+  // Trend note
+  const trend = document.getElementById(trendId);
+  if (property === 'radius') {
+    trend.textContent = '📉 Trend: Periyot boyunca soldan sağa atom yarıçapı küçülür. Çekirdek yükü arttıkça elektronlar daha sıkı çekilir.';
+  } else {
+    trend.textContent = '📈 Trend: Periyot boyunca soldan sağa iyonlaşma enerjisi artar (soy gazlarda zirve). Daha güçlü çekirdek = elektronu koparmak daha zor.';
+  }
+}
+
+buildChart('radiusChart', 'radius', 'pm', accent, 'radiusTrend');
+buildChart('ieChart', 'ie', '', '#f72585', 'ieTrend');
+</script>
+</body>
+</html>

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>İnteraktif Periyodik Tablo</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --bg2: #12121a;
+  --bg3: #1a1a26;
+  --border: rgba(255,255,255,0.08);
+  --text: #e8e8f0;
+  --muted: #7070a0;
+  --alkali: #ff6b35;
+  --alkaline: #f7c59f;
+  --transition: #4ecdc4;
+  --metal: #a8a8b8;
+  --metalloid: #6bcb77;
+  --nonmetal: #ff6b6b;
+  --halogen: #c77dff;
+  --noble: #4cc9f0;
+  --lanthanide: #f72585;
+  --actinide: #ff9a3c;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  overflow-x: auto;
+}
+header {
+  padding: 24px 32px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+h1 {
+  font-family: 'Space Mono', monospace;
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+  color: var(--text);
+}
+h1 span { color: var(--noble); }
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 11px;
+}
+.leg-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+}
+.leg-dot {
+  width: 10px; height: 10px;
+  border-radius: 2px;
+}
+.table-wrap {
+  padding: 24px 16px;
+  overflow-x: auto;
+}
+.pt-grid {
+  display: grid;
+  grid-template-columns: repeat(18, minmax(54px, 60px));
+  gap: 3px;
+  min-width: 980px;
+  margin: 0 auto;
+  width: fit-content;
+}
+.cell {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+  text-decoration: none;
+  background: var(--bg2);
+}
+.cell:hover {
+  transform: scale(1.18);
+  z-index: 10;
+  box-shadow: 0 0 20px rgba(255,255,255,0.15);
+  border-color: rgba(255,255,255,0.3);
+}
+.cell .z {
+  font-size: 8px;
+  color: var(--muted);
+  font-family: 'Space Mono', monospace;
+  position: absolute;
+  top: 4px;
+  left: 5px;
+}
+.cell .sym {
+  font-family: 'Space Mono', monospace;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+}
+.cell .nm {
+  font-size: 7px;
+  color: var(--muted);
+  margin-top: 2px;
+  text-align: center;
+  max-width: 95%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.empty { background: transparent; border: none; cursor: default; pointer-events: none; }
+.gap-label {
+  background: transparent;
+  border: 1px dashed rgba(255,255,255,0.06);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: rgba(255,255,255,0.15);
+  font-family: 'Space Mono', monospace;
+  cursor: default;
+  aspect-ratio: 1;
+}
+.lan-row, .act-row {
+  display: grid;
+  grid-template-columns: repeat(18, minmax(54px, 60px));
+  gap: 3px;
+  min-width: 980px;
+  margin: 0 auto;
+  width: fit-content;
+  margin-top: 3px;
+}
+.series-label {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  color: var(--muted);
+  font-family: 'Space Mono', monospace;
+  text-align: center;
+}
+/* Category colors */
+.alkali     { border-color: color-mix(in srgb, var(--alkali) 30%, transparent);     color: var(--alkali); }
+.alkaline   { border-color: color-mix(in srgb, var(--alkaline) 30%, transparent);   color: var(--alkaline); }
+.transition { border-color: color-mix(in srgb, var(--transition) 30%, transparent); color: var(--transition); }
+.metal      { border-color: color-mix(in srgb, var(--metal) 30%, transparent);      color: var(--metal); }
+.metalloid  { border-color: color-mix(in srgb, var(--metalloid) 30%, transparent);  color: var(--metalloid); }
+.nonmetal   { border-color: color-mix(in srgb, var(--nonmetal) 30%, transparent);   color: var(--nonmetal); }
+.halogen    { border-color: color-mix(in srgb, var(--halogen) 30%, transparent);    color: var(--halogen); }
+.noble      { border-color: color-mix(in srgb, var(--noble) 30%, transparent);      color: var(--noble); }
+.lanthanide { border-color: color-mix(in srgb, var(--lanthanide) 30%, transparent); color: var(--lanthanide); }
+.actinide   { border-color: color-mix(in srgb, var(--actinide) 30%, transparent);   color: var(--actinide); }
+
+.alkali     .sym { color: var(--alkali); }
+.alkaline   .sym { color: var(--alkaline); }
+.transition .sym { color: var(--transition); }
+.metal      .sym { color: var(--metal); }
+.metalloid  .sym { color: var(--metalloid); }
+.nonmetal   .sym { color: var(--nonmetal); }
+.halogen    .sym { color: var(--halogen); }
+.noble      .sym { color: var(--noble); }
+.lanthanide .sym { color: var(--lanthanide); }
+.actinide   .sym { color: var(--actinide); }
+
+.info-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  padding: 16px 32px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--muted);
+}
+.info-stat strong { display: block; font-size: 20px; font-weight: 600; color: var(--text); font-family: 'Space Mono', monospace; }
+footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 11px;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>⚛ Periyodik <span>Tablo</span></h1>
+  <div class="legend">
+    <div class="leg-item"><div class="leg-dot" style="background:#ff6b35"></div>Alkali Metal</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#f7c59f"></div>Toprak Alkali</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#4ecdc4"></div>Geçiş Metali</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#a8a8b8"></div>Metal</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#6bcb77"></div>Yarı Metal</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#ff6b6b"></div>Ametal</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#c77dff"></div>Halojen</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#4cc9f0"></div>Soy Gaz</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#f72585"></div>Lantanit</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#ff9a3c"></div>Aktinit</div>
+  </div>
+</header>
+
+<div class="table-wrap">
+  <div class="pt-grid" id="main-grid"></div>
+  <div style="height:8px"></div>
+  <div class="lan-row" id="lan-row"></div>
+  <div class="act-row" id="act-row"></div>
+</div>
+
+<div class="info-bar">
+  <div class="info-stat"><strong>118</strong>Element</div>
+  <div class="info-stat"><strong>7</strong>Periyot</div>
+  <div class="info-stat"><strong>18</strong>Grup</div>
+  <div class="info-stat">QR kodu tara veya elemente tıkla → animasyonlu bilgi</div>
+</div>
+
+<footer>Her elemente tıkla → 3D atom modeli · atom yarıçapı · iyonlaşma enerjisi</footer>
+
+<script src="elements_data.js"></script>
+<script>
+// Map elements by atomic number
+const byZ = {};
+ELEMENTS.forEach(e => byZ[e.z] = e);
+
+// Periodic table layout: [z, period, group] — lanthanides/actinides separate
+// Main grid: periods 1-7, groups 1-18
+// Lanthanides: z 57-71 (period 6, shown separately)
+// Actinides: z 89-103 (period 7, shown separately)
+
+const mainGrid = []; // [row][col] = z or null
+for (let r = 0; r < 7; r++) mainGrid.push(new Array(18).fill(null));
+
+ELEMENTS.forEach(e => {
+  if (e.category === 'lanthanide' || e.category === 'actinide') return;
+  let row = e.period - 1;
+  let col = e.group - 1;
+  mainGrid[row][col] = e.z;
+});
+
+// Lanthanide/actinide placeholder positions
+// Period 6 group 3 -> La placeholder, period 7 group 3 -> Ac placeholder
+mainGrid[5][2] = 'lan'; // lanthanide series marker
+mainGrid[6][2] = 'act'; // actinide series marker
+
+function makeCell(z) {
+  if (z === null) return `<div class="empty"></div>`;
+  if (z === 'lan') return `<div class="gap-label">57–71</div>`;
+  if (z === 'act') return `<div class="gap-label">89–103</div>`;
+  const e = byZ[z];
+  if (!e) return `<div class="empty"></div>`;
+  return `<a class="cell ${e.category}" href="element.html?z=${e.z}" title="${e.name}">
+    <span class="z">${e.z}</span>
+    <span class="sym">${e.sym}</span>
+    <span class="nm">${e.name}</span>
+  </a>`;
+}
+
+const grid = document.getElementById('main-grid');
+mainGrid.forEach(row => {
+  row.forEach(z => {
+    grid.innerHTML += makeCell(z);
+  });
+});
+
+// Lanthanide row: cols 3-17 (z 57-71), label in col 1-2
+const lanRow = document.getElementById('lan-row');
+for (let c = 0; c < 18; c++) {
+  const z = (c >= 3 && c <= 17) ? 57 + (c - 3) : null;
+  if (c === 0) { lanRow.innerHTML += `<div class="series-label">Lan-<br>tanit</div>`; continue; }
+  if (c === 1 || c === 2) { lanRow.innerHTML += `<div class="empty"></div>`; continue; }
+  if (z && byZ[z]) lanRow.innerHTML += makeCell(z);
+  else lanRow.innerHTML += `<div class="empty"></div>`;
+}
+
+// Actinide row: cols 3-17 (z 89-103)
+const actRow = document.getElementById('act-row');
+for (let c = 0; c < 18; c++) {
+  const z = (c >= 3 && c <= 17) ? 89 + (c - 3) : null;
+  if (c === 0) { actRow.innerHTML += `<div class="series-label">Ak-<br>tinit</div>`; continue; }
+  if (c === 1 || c === 2) { actRow.innerHTML += `<div class="empty"></div>`; continue; }
+  if (z && byZ[z]) actRow.innerHTML += makeCell(z);
+  else actRow.innerHTML += `<div class="empty"></div>`;
+}
+</script>
+</body>
+</html>
